@@ -60,7 +60,7 @@ fn main() {
         let laters = partition(line,' ');
         let p1 = gesture::from_later(laters.0.chars().next().unwrap());
         let p2 = gesture::from_later(laters.1.chars().next().unwrap());
-        result += p1.value() + p1.result(&p2);
+        result += p2.value() + p2.result(&p1);
         ind = i;
     }
 
