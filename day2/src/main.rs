@@ -1,5 +1,7 @@
-use std::{fs::File,io::prelude::*};
+//https://adventofcode.com/2022/day/2
 
+use std::{fs::File, io::prelude::*};
+#[allow(non_camel_case_types)]
 #[derive(Copy, Clone, PartialEq, Eq)]
 enum gesture {
     Rock,
@@ -42,6 +44,37 @@ impl gesture {
     }
 }
 
+enum Hints {
+    Win,
+    Lose,
+    Draw,
+}
+
+impl Hints {
+    fn from_later(h: char) -> Self {
+        match h {
+            'X' => Hints::Lose,
+            'Y' => Hints::Draw,
+            'Z' => Hints::Win,
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl gesture {
+    fn guess_from_hint(&self, h: Hints) -> Self {
+        match (h, *self) {
+            (Hints::Win, gesture::Rock) => gesture::Paper,
+            (Hints::Win, gesture::Paper) => gesture::Scissor,
+            (Hints::Win, gesture::Scissor) => gesture::Rock,
+            (Hints::Lose, gesture::Rock) => gesture::Scissor,
+            (Hints::Lose, gesture::Paper) => gesture::Rock,
+            (Hints::Lose, gesture::Scissor) => gesture::Paper,
+            (Hints::Draw, g) => g,
+        }
+    }
+}
+
 fn partition(haystack: &str, pin: char) -> (&str, &str) {
     let pos = haystack.find(pin).unwrap();
     (&haystack[..pos], &haystack[pos + 1..])
@@ -55,16 +88,18 @@ fn main() {
     let buffer = String::from_utf8_lossy(&buffer);
     let mut result = 0;
     let mut ind = 0;
-    for (i,line) in buffer.lines().enumerate() {
+    for (i, line) in buffer.lines().enumerate() {
         //dbg!(partition(line, ' '));
-        let laters = partition(line,' ');
+        let laters = partition(line, ' ');
         let p1 = gesture::from_later(laters.0.chars().next().unwrap());
-        let p2 = gesture::from_later(laters.1.chars().next().unwrap());
+        //let p2 = gesture::from_later(laters.1.chars().next().unwrap());
+        let h = Hints::from_later(laters.1.chars().next().unwrap());
+        let p2 = p1.guess_from_hint(h);
         result += p2.value() + p2.result(&p1);
         ind = i;
     }
 
-    dbg!(ind,result);
+    dbg!(ind, result);
 }
 
 #[cfg(test)]
