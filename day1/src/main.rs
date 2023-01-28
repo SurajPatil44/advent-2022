@@ -7,13 +7,12 @@ fn get_sum(inp: &Vec<u8>) -> u32 {
     let inp = String::from_utf8_lossy(inp);
     let mut it = inp
         .lines()
-        .map(|c| c.parse::<u32>().unwrap())
+:        .map(|c| c.parse::<u32>().unwrap())
         .reduce(|acc, e| acc + e)
         .unwrap();
     //dbg!(it);
     it
 }
-
 fn main() {
     let mut data = File::open("input.txt").unwrap();
     let mut buffer: Vec<u8> = Vec::with_capacity(1024);
