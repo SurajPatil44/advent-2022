@@ -16,6 +16,14 @@ impl Content {
     }
 }
 
+pub fn partition<P>(haystack: &P, pin: char) -> (&str, &str)
+where
+    P: AsRef<str>,
+{
+    let pos = haystack.as_ref().find(pin).unwrap();
+    (&haystack.as_ref()[..pos], &haystack.as_ref()[pos + 1..])
+}
+
 impl Iterator for Content {
     type Item = String; // neew to use cow
     fn next(&mut self) -> Option<String> {
@@ -42,9 +50,15 @@ mod tests {
 
     #[test]
     fn take_test() {
-        let mut content = Content::read_from_file("input.txt");
+        let content = Content::read_from_file("input.txt");
         let mut lines = content.take(2);
         assert_eq!(lines.next(), Some(String::from("line 1")));
         assert_eq!(lines.next(), Some(String::from("line 2")));
+    }
+    #[test]
+    fn partition_test() {
+        let string = String::from("a-b,c-d");
+        let parts = partition(&string, ',');
+        assert_eq!(parts,("a-b","c-d"));
     }
 }
