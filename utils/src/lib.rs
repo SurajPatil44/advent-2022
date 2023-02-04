@@ -20,8 +20,11 @@ pub fn partition<P>(haystack: &P, pin: char) -> (&str, &str)
 where
     P: AsRef<str>,
 {
-    let pos = haystack.as_ref().find(pin).unwrap();
-    (&haystack.as_ref()[..pos], &haystack.as_ref()[pos + 1..])
+    let posm = haystack.as_ref().find(pin);
+    match posm {
+        Some(pos) => (&haystack.as_ref()[..pos], &haystack.as_ref()[pos + 1..]),
+        None => (&haystack.as_ref(), ""),
+    }
 }
 
 impl Iterator for Content {
@@ -59,6 +62,6 @@ mod tests {
     fn partition_test() {
         let string = String::from("a-b,c-d");
         let parts = partition(&string, ',');
-        assert_eq!(parts,("a-b","c-d"));
+        assert_eq!(parts, ("a-b", "c-d"));
     }
 }
