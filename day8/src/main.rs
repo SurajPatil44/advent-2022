@@ -64,8 +64,13 @@ impl Grid {
 
     fn find_visibility_helper(&mut self, posx: usize, posy: usize) {
         let mut tree = self.get(posx, posy).unwrap();
+
         // check edge boundary
-        if tree.posx == 0 || tree.posy == 0 || tree.posx == self.ht - 1 || tree.posy == self.wd - 1
+        if tree.posx == 0
+            || tree.posy == 0
+            || tree.posx == self.ht - 1
+            || tree.posy == self.wd - 1
+            || tree.visible
         {
             tree.set_vis(true);
             self.put(posx, posy, tree);
@@ -89,6 +94,66 @@ impl Grid {
             return;
         }
     }
+
+    fn set_scenic_score_helper(&mut self, posx: usize, posy: usize) {
+        let mut tree = self.get(posx, posy).unwrap();
+
+        let mut scenic_score = 0;
+        // we go left
+        for i in (0..posx).rev() {
+            scenic_score += 1;
+            if self.get(i, posy).unwrap().ht >= tree.ht {
+                break;
+            }
+        }
+        //        println!("left {scenic_score}");
+        tree.scenic_score *= scenic_score;
+        scenic_score = 0;
+        // we go right
+        for i in posx + 1..self.wd {
+            scenic_score += 1;
+
+            if self.get(i, posy).unwrap().ht >= tree.ht {
+                break;
+            }
+        }
+        // we go up
+        //println!("right {scenic_score}");
+        tree.scenic_score *= scenic_score;
+        scenic_score = 0;
+
+        for j in (0..posy).rev() {
+            scenic_score += 1;
+            if self.get(posx, j).unwrap().ht >= tree.ht {
+                break;
+            }
+        }
+        // we go down
+        //println!("up {scenic_score}");
+        tree.scenic_score *= scenic_score;
+        scenic_score = 0;
+
+        for j in posy + 1..self.ht {
+            scenic_score += 1;
+            if self.get(posx, j).unwrap().ht >= tree.ht {
+                break;
+            }
+        }
+        //println!("down {scenic_score}");
+        tree.scenic_score *= scenic_score;
+        self.put(posx, posy, tree);
+    }
+
+    fn set_scenic_score(&mut self) {
+        for x in 0..self.ht {
+            for y in 0..self.wd {
+                self.set_scenic_score_helper(x, y);
+            }
+        }
+
+        //self.set_scenic_score_helper(3, 2);
+    }
+
     fn find_visibility(&mut self) {
         for x in 0..self.ht {
             for y in 0..self.wd {
@@ -104,6 +169,7 @@ struct Tree {
     posx: usize,
     posy: usize,
     visible: bool,
+    scenic_score: usize,
 }
 
 impl Tree {
@@ -113,10 +179,14 @@ impl Tree {
             posx,
             posy,
             visible: false,
+            scenic_score: 1,
         }
     }
     fn set_vis(&mut self, visibility: bool) {
         self.visible = visibility;
+    }
+    fn set_scenic(&mut self, score: usize) {
+        self.scenic_score = score;
     }
 }
 
@@ -136,6 +206,7 @@ fn main() {
     }
     forest.set_dim(forest.len(), wd);
     //dbg!(&forest);
+    /*
     forest.find_visibility();
     let mut visible = 0usize;
     for row in &forest.matrix {
@@ -143,6 +214,16 @@ fn main() {
             visible += tree.visible as usize;
         }
     }
-    dbg!(visible);
-    //dbg!(&forest);
+    //dbg!(visible);
+    */
+    forest.set_scenic_score();
+    let mut max_score = 0;
+    for row in &forest.matrix {
+        for t in row {
+            if t.scenic_score > max_score {
+                max_score = t.scenic_score;
+            }
+        }
+    }
+    dbg!(max_score);
 }
